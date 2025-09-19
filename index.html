@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor HTML Interactivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 70vh;
+        }
+
+        @media (max-width: 768px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .editor-panel {
+            background: #1a1a2e;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header i {
+            font-size: 1.2em;
+        }
+
+        .code-editor {
+            width: 100%;
+            height: 400px;
+            background: #1a1a2e;
+            color: #e94560;
+            border: none;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .code-editor::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .code-editor::-webkit-scrollbar-track {
+            background: #16213e;
+        }
+
+        .code-editor::-webkit-scrollbar-thumb {
+            background: #4facfe;
+            border-radius: 4px;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 400px;
+            border: none;
+            background: white;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .controls {
+            text-align: center;
+            padding: 20px;
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .run-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            margin: 0 10px;
+        }
+
+        .run-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            margin: 0 10px;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4);
+        }
+
+        .error-panel {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: 20px;
+            border-radius: 15px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success-panel {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: 20px;
+            border-radius: 15px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tips {
+            background: rgba(79, 172, 254, 0.1);
+            padding: 20px;
+            margin: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .tips h3 {
+            color: #16213e;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .tips ul {
+            color: #666;
+            margin-left: 20px;
+        }
+
+        .tips li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .editor-container {
+                display: block;
+            }
+            
+            .editor-panel {
+                margin-bottom: 15px;
+            }
+            
+            .preview-panel {
+                display: none;
+            }
+            
+            .preview-panel.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>?? Editor HTML Interactivo</h1>
+            <p>Escribe tu código HTML y ve los resultados al instante</p>
+        </div>
+
+        <button class="mobile-toggle" onclick="togglePreview()">
+            ?? Ver Vista Previa
+        </button>
+
+        <div class="editor-container">
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <span>?? Editor de Código</span>
+                    <span>HTML</span>
+                </div>
+                <textarea class="code-editor" id="htmlEditor" placeholder="Escribe tu código HTML aquí..."><h1>¡Hola Mundo!</h1>
+<p style="color: blue; font-size: 20px;">Bienvenido a mi página</p>
+
+<div style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4); padding: 20px; border-radius: 10px; margin: 20px 0;">
+    <h2 style="color: white;">Mi contenido especial</h2>
+    <button onclick="alert('¡Funciona!')" style="background: #fff; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
+        Haz clic aquí
+    </button>
+</div>
+
+<ul>
+    <li>Elemento 1</li>
+    <li>Elemento 2</li>
+    <li>Elemento 3</li>
+</ul>
+
+<script>
+    console.log('JavaScript funcionando!');
+</script></textarea>
+            </div>
+
+            <div class="editor-panel preview-panel" id="previewPanel">
+                <div class="panel-header">
+                    <span>??? Vista Previa</span>
+                    <span>Resultado</span>
+                </div>
+                <iframe class="preview-frame" id="preview"></iframe>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="run-btn" onclick="runCode()">?? Ejecutar Código</button>
+            <button class="clear-btn" onclick="clearEditor()">??? Limpiar</button>
+        </div>
+
+        <div class="error-panel" id="errorPanel">
+            <h3>? Error Detectado:</h3>
+            <div id="errorMessage"></div>
+        </div>
+
+        <div class="success-panel" id="successPanel">
+            <h3>? ¡Código Válido!</h3>
+            <p>Tu HTML se ejecutó correctamente sin errores.</p>
+        </div>
+
+        <div class="tips">
+            <h3>?? Consejos para usar el editor:</h3>
+            <ul>
+                <li><strong>Etiquetas básicas:</strong> &lt;h1&gt;, &lt;p&gt;, &lt;div&gt;, &lt;span&gt; para texto y contenido</li>
+                <li><strong>Estilos:</strong> Usa style="" en cualquier elemento para darle color y forma</li>
+                <li><strong>JavaScript:</strong> Usa &lt;script&gt; para agregar interactividad</li>
+                <li><strong>Listas:</strong> &lt;ul&gt; y &lt;li&gt; para crear listas</li>
+                <li><strong>Botones:</strong> &lt;button onclick="alert('Hola')"&gt; para botones interactivos</li>
+                <li><strong>¡Experimenta!</strong> No hay reglas estrictas, solo diviértete creando</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let isMobilePreviewVisible = false;
+
+        function runCode() {
+            const htmlCode = document.getElementById('htmlEditor').value;
+            const preview = document.getElementById('preview');
+            const errorPanel = document.getElementById('errorPanel');
+            const successPanel = document.getElementById('successPanel');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Ocultar paneles de estado
+            errorPanel.style.display = 'none';
+            successPanel.style.display = 'none';
+
+            try {
+                // Validar HTML básico
+                const errors = validateHTML(htmlCode);
+                
+                if (errors.length > 0) {
+                    // Mostrar errores
+                    errorPanel.style.display = 'block';
+                    errorMessage.innerHTML = errors.map(error => `<p>? ${error}</p>`).join('');
+                } else {
+                    // Mostrar éxito
+                    successPanel.style.display = 'block';
+                    setTimeout(() => {
+                        successPanel.style.display = 'none';
+                    }, 3000);
+                }
+
+                // Ejecutar código independientemente (para ver errores visuales)
+                preview.srcdoc = htmlCode;
+
+            } catch (error) {
+                errorPanel.style.display = 'block';
+                errorMessage.innerHTML = `<p>? Error inesperado: ${error.message}</p>`;
+            }
+        }
+
+        function validateHTML(html) {
+            const errors = [];
+            
+            // Solo verificar errores críticos que realmente rompen el HTML
+            
+            // Verificar etiquetas obviamente mal cerradas (solo las más comunes)
+            const criticalTags = ['div', 'p', 'h1', 'h2', 'h3', 'span', 'a', 'ul', 'ol', 'li'];
+            
+            criticalTags.forEach(tagName => {
+                const openCount = (html.match(new RegExp(`<${tagName}[\\s>]`, 'gi')) || []).length;
+                const closeCount = (html.match(new RegExp(`</${tagName}>`, 'gi')) || []).length;
+                
+                if (openCount > closeCount) {
+                    errors.push(`Posible etiqueta <${tagName}> sin cerrar. Revisa que todas tengan su </${tagName}>.`);
+                }
+            });
+
+            // Verificar comillas mal cerradas en atributos (solo casos obvios)
+            const unbalancedQuotes = html.match(/=\s*"[^"]*$/gm);
+            if (unbalancedQuotes) {
+                errors.push('Hay comillas sin cerrar en algunos atributos.');
+            }
+
+            // Verificar JavaScript con errores de sintaxis obvios
+            const scriptBlocks = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+            if (scriptBlocks) {
+                scriptBlocks.forEach(script => {
+                    const jsContent = script.replace(/<script[^>]*>|<\/script>/gi, '');
+                    if (jsContent.includes('function') && !jsContent.includes('{')) {
+                        errors.push('Posible error de sintaxis en JavaScript: función sin llaves {}');
+                    }
+                });
+            }
+
+            return errors;
+        }
+
+        function clearEditor() {
+            if (confirm('¿Estás seguro de que quieres limpiar el editor?')) {
+                document.getElementById('htmlEditor').value = '';
+                document.getElementById('preview').srcdoc = '';
+                document.getElementById('errorPanel').style.display = 'none';
+                document.getElementById('successPanel').style.display = 'none';
+            }
+        }
+
+        function togglePreview() {
+            const previewPanel = document.getElementById('previewPanel');
+            const toggleBtn = document.querySelector('.mobile-toggle');
+            
+            isMobilePreviewVisible = !isMobilePreviewVisible;
+            
+            if (isMobilePreviewVisible) {
+                previewPanel.classList.add('active');
+                toggleBtn.textContent = '?? Ver Editor';
+            } else {
+                previewPanel.classList.remove('active');
+                toggleBtn.textContent = '?? Ver Vista Previa';
+            }
+        }
+
+        // Ejecutar código automáticamente al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            runCode();
+        });
+
+        // Auto-ejecutar al escribir (con debounce)
+        let timeout;
+        document.getElementById('htmlEditor').addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(runCode, 1000);
+        });
+    </script>
+</body>
+</html>
